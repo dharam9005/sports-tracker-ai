@@ -49,13 +49,18 @@ Built for the AI/CV internship assessment.
 
 # Input method
 st.markdown("---")
+st.info(
+    "**Recommended:** Please use **Upload Video File** to upload a sports video directly from your computer. "
+    "The YouTube URL option may not work on Streamlit Cloud due to `yt-dlp` restrictions on cloud-hosted environments. "
+    "Download any public sports video to your computer first, then upload it here."
+)
 input_method = st.radio(
-    "Choose input method:", ["Upload Video File", "YouTube / Public URL"], horizontal=True
+    "Choose input method:", ["Upload Video File (Recommended)", "YouTube / Public URL"], horizontal=True
 )
 
 video_path = None
 
-if input_method == "Upload Video File":
+if input_method == "Upload Video File (Recommended)":
     uploaded = st.file_uploader("Upload a video", type=["mp4", "avi", "mov", "mkv"])
     if uploaded:
         tfile = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
@@ -63,6 +68,11 @@ if input_method == "Upload Video File":
         video_path = tfile.name
         st.video(uploaded)
 else:
+    st.warning(
+        "**Note:** YouTube/URL download uses `yt-dlp` which may fail on Streamlit Cloud due to cloud environment "
+        "restrictions (no persistent disk, IP-based rate limits, missing binaries). "
+        "If this fails, please download the video to your computer and use the **Upload** option instead."
+    )
     url = st.text_input(
         "Enter public video URL:",
         placeholder="https://www.youtube.com/watch?v=...",
@@ -72,10 +82,16 @@ else:
             try:
                 tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
                 video_path = download_video(url, tmp.name, max_duration=120)
+                if not os.path.exists(video_path) or os.path.getsize(video_path) == 0:
+                    raise ValueError("Download produced an empty file. Please use Upload instead.")
                 st.success("Video downloaded successfully!")
                 st.video(video_path)
             except Exception as e:
-                st.error(f"Download failed: {e}")
+                st.error(
+                    f"Download failed: {e}\n\n"
+                    "**Solution:** Please download the video manually to your computer, "
+                    "then switch to **Upload Video File** and upload it directly."
+                )
 
 # Process video
 if video_path and st.button("Run Tracking Pipeline", type="primary"):
