@@ -8,7 +8,7 @@ A computer vision pipeline for detecting and tracking all subjects in sports/eve
 
 ## Live Demo
 
-🔗 **[Try the Live App](https://sports-tracker-ai.streamlit.app)**
+🔗 **[Try the Live App](https://dharam9005-sports-tracker-ai.streamlit.app)**
 
 ## Features
 
